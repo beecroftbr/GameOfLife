@@ -53,6 +53,7 @@ namespace GameOfLife
             {
                 endpoints.MapRazorPages();
                 endpoints.MapHub<ChatHub>("/chatHub");
+                endpoints.MapHub<DrawHub>("/drawHub");
             });
         }
     }
