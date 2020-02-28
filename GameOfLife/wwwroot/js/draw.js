@@ -12,10 +12,11 @@ var tiles = [];
 var canvasElement = document.getElementById("lifeCanvas");
 var tileHeight = canvasElement.height / numberOfTiles;
 var tileWidth = canvasElement.width / numberOfTiles;
+var ctx = canvasElement.getContext('2d');
 
-connection.on("ReceiveDraw", function (user, livePixels) {
-    var chatData = document.getElementById("hiddenData");
-    chatData.innerHTML = livePixels;
+connection.on("ReceiveDraw", function (livePixels) {
+    //var chatData = document.getElementById("hiddenData");
+    //chatData.innerHTML = livePixels;
     
     //redraw the board upon connection of user selection
     for(let i = 0; i < totalTileDepth^2; i++) {
@@ -57,11 +58,10 @@ document.getElementById("lifeCanvas").addEventListener("click", function (event)
     //userData = userData.replaceAt(trueXPixel + ((trueYPixel) * (numberOfTiles + 2)), "1");
     //document.getElementById("hiddenData").innerHTML = userData;
     tiles[(trueXPixel + ((trueYPixel) * (numberOfTiles + 2)))] = "1";
-    var ctx = canvasElement.getContext('2d');
     ctx.fillStyle='red';
-    //ctx.fillRect(0,0,canvasElement.width,canvasElement.height);
-
-    connection.invoke("SendDraw", user, tiles).catch(function (err) {
+    ctx.fillRect(0,0,canvasElement.width,canvasElement.height);
+    
+    connection.invoke("SendDraw", JSON.stringify(tiles)).catch(function (err) {
         return console.error(err.toString());
     });
     event.preventDefault();
