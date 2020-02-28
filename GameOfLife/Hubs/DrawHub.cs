@@ -7,6 +7,8 @@ namespace GameOfLife.Hubs
     {
         public async Task SendDraw(string user, string livePixels)
         {
+            //game logic
+            
             await Clients.All.SendAsync("ReceiveDraw", user, livePixels);
         }
     }
