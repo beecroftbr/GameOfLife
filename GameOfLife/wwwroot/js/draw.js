@@ -1,11 +1,4 @@
 ﻿"use strict";
-var numberOfTiles = 16;
-var totalTileDepth=numberOfTiles+2;
-var tiles = tiles[(totalTileDepth)^2] = 0;
-var canvasElement = document.getElementById("lifeCanvas");
-var tileHeight = canvasElement.height / numberOfTiles;
-var tileWidth = canvasElement.width / numberOfTiles;
-var canvas = canvasElement.getContext('2d');
 
 //var connection = new signalR.HubConnectionBuilder().withUrl("http://students.cs.weber.edu/ThreeMenWithBeards/drawHub").build(); // Server setting
 var connection = new signalR.HubConnectionBuilder().withUrl("/drawHub").build(); // Localhost setting
@@ -13,17 +6,24 @@ var connection = new signalR.HubConnectionBuilder().withUrl("/drawHub").build();
 // Disable the canvas until the page is loaded.
 //document.getElementById("lifeCanvas").disabled = true;
 
+var numberOfTiles = 16;
+var totalTileDepth=numberOfTiles+2;
+var tiles = [];
+var canvasElement = document.getElementById("lifeCanvas");
+var tileHeight = canvasElement.height / numberOfTiles;
+var tileWidth = canvasElement.width / numberOfTiles;
+
 connection.on("ReceiveDraw", function (user, livePixels) {
     var chatData = document.getElementById("hiddenData");
     chatData.innerHTML = livePixels;
     
     //redraw the board upon connection of user selection
-    for(let i = 0; i < tiles.length; i++) {
-        var row = tiles.length / numberOfTiles;
-        var column = tiles.width % numberOfTiles;
+    for(let i = 0; i < totalTileDepth^2; i++) {
+        var row = totalTileDepth^2 / numberOfTiles;
+        var column = totalTileDepth^2 % numberOfTiles;
         if (row == 0 || row > numberOfTiles || col == 0 || col > numberOfTiles) continue;
         
-        canvas.fillRect(row, column, tileHeight, tileWidth);
+        ctx.fillRect(row, column, tileHeight, tileWidth);
     }
     
 });
@@ -56,11 +56,12 @@ document.getElementById("lifeCanvas").addEventListener("click", function (event)
     var trueYPixel = Math.ceil(canvasY / tileHeight);
     //userData = userData.replaceAt(trueXPixel + ((trueYPixel) * (numberOfTiles + 2)), "1");
     //document.getElementById("hiddenData").innerHTML = userData;
-    tiles.replaceAt(trueXPixel + ((trueYPixel) * (numberOfTiles + 2)), "1");
-    canvas.fillStyle='red';
-    canvas.fillRect(0,0,canvasElement.width,canvasElement.height);
+    tiles[(trueXPixel + ((trueYPixel) * (numberOfTiles + 2)))] = "1";
+    var ctx = canvasElement.getContext('2d');
+    ctx.fillStyle='red';
+    //ctx.fillRect(0,0,canvasElement.width,canvasElement.height);
 
-    connection.invoke("SendDraw", user, userData).catch(function (err) {
+    connection.invoke("SendDraw", user, tiles).catch(function (err) {
         return console.error(err.toString());
     });
     event.preventDefault();
