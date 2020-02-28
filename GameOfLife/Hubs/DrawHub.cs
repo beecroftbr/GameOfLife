@@ -26,3 +26,10 @@ namespace GameOfLife.Hubs
         }
     }
 }
+
+
+//TO do list
+//convert one dimensional array to a 2d array (or work with 1D array) 
+//create the rules of the game
+//create color changing 
+//Potentially put game logic in seperate function.

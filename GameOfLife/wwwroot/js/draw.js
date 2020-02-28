@@ -66,3 +66,8 @@ document.getElementById("lifeCanvas").addEventListener("click", function (event)
     });
     event.preventDefault();
 });
+
+//to do
+//we need to send the width and lenght to the server
+//once we recieve the data back fill the tiles that have 1s
+//draw the grid above the filled squares
