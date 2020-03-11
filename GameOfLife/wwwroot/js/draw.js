@@ -15,6 +15,7 @@ var tileWidth = canvasElement.width / numberOfTiles;
 var ctx = canvasElement.getContext('2d');
 
 connection.on("ReceiveDraw", function (livePixels) {
+    drawGrid(ctx);
     //var chatData = document.getElementById("hiddenData");
     //chatData.innerHTML = livePixels;
     
@@ -38,16 +39,17 @@ connection.start().then(function () {
 String.prototype.replaceAt = function (index, replacement) {
     return this.substr(0, index) + replacement + this.substr(index + replacement.length);
 }
-function getMouseY(canvas, event) {
-    let rect = canvas.getBoundingClientRect();
+function getMouseY(canvasElement, event) {
+    let rect = canvasElement.getBoundingClientRect();
     let y = event.clientY - rect.top;
     return y;
 } 
-function getMouseX(canvas, event) {
-    let rect = canvas.getBoundingClientRect();
+function getMouseX(canvasElement, event) {
+    let rect = canvasElement.getBoundingClientRect();
     let x = event.clientX - rect.left;
     return x;
-} 
+}
+
 
 document.getElementById("lifeCanvas").addEventListener("click", function (event) {
     //var userData = document.getElementById("hiddenData").innerHTML;
@@ -66,6 +68,8 @@ document.getElementById("lifeCanvas").addEventListener("click", function (event)
     });
     event.preventDefault();
 });
+
+
 
 //to do
 //we need to send the width and lenght to the server

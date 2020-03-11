@@ -16,13 +16,9 @@ namespace GameOfLife.Hubs
         public async Task SendDraw(string livePixels)
         {
             var json = JsonConvert.DeserializeObject(livePixels);
-            int?[] jsonTiles = ((JArray) json).Select(a => (int?) a).ToArray();
-            int[] actualizedArray = new int[jsonTiles.Length];
-            for(int i = 0; i < jsonTiles.Length; i++)
-            {
-                actualizedArray[i] = jsonTiles[i] ?? 0;
-            }
-            await Clients.All.SendAsync("ReceiveDraw", json);
+            int[] arrayOfThings = ((JArray)json).Select(a => (int?) a ?? 0).ToArray();
+            
+            await Clients.All.SendAsync("ReceiveDraw", arrayOfThings);
         }
     }
 }
