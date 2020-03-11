@@ -6,6 +6,8 @@ using Json.Net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Linq;
+using System.Collections.Generic;
+using System;
 
 namespace GameOfLife.Hubs
 {
@@ -13,12 +15,69 @@ namespace GameOfLife.Hubs
     {
         
         
-        public async Task SendDraw(string livePixels)
+        public async Task SendDraw(string livePixels, int totalTileDepth, int updateGameState)
         {
             var json = JsonConvert.DeserializeObject(livePixels);
-            int[] arrayOfThings = ((JArray)json).Select(a => (int?) a ?? 0).ToArray();
-            
-            await Clients.All.SendAsync("ReceiveDraw", arrayOfThings);
+            List<int> listArrayOfInts = ((JArray)json).Select(a => (int?) a ?? 0).ToList();
+            for(int i = 0; i < totalTileDepth * totalTileDepth; i++)
+                if (i >= listArrayOfInts.Count()) listArrayOfInts.Add(0);
+            int[] arrayOfThings = listArrayOfInts.ToArray();
+
+            int[] returnableArray = updateGameState == 0 ? arrayOfThings : applyGameRule(arrayOfThings, totalTileDepth);
+
+            await Clients.All.SendAsync("ReceiveDraw", returnableArray);
+        }
+
+        private int[] applyGameRule(int[] clientArray, int totalTileDepth)
+        {
+            // Any live cell with fewer than two live neighbors dies.
+            // Any live cell with two or three live neighbors lives.
+            // Any live cell with more than three live neighbors dies.
+            // Any dead cell with exactly three live neighbors becomes a live cell.
+
+            int[] newGameArray = new int[clientArray.Length];
+            for (int i = totalTileDepth + 1; i < newGameArray.Length - totalTileDepth - 1; i++)
+            {
+                var row = Math.Floor((double)i / totalTileDepth);
+                var column = i % totalTileDepth;
+                List<int> proxemalTiles;
+                int[] intTiles = new int[] {
+                    clientArray[i - totalTileDepth - 1], // top left tile
+                    clientArray[i - totalTileDepth], // top tile
+                    clientArray[i - totalTileDepth + 1], // top right tile
+                    clientArray[i - i], // left tile
+                    clientArray[i], // Tile itself
+                    clientArray[i + 1], // right tile
+                    clientArray[i + totalTileDepth - 1], // bottom left tile
+                    clientArray[i + totalTileDepth], // bottom tile
+                    clientArray[i + totalTileDepth + 1], // bottom right tile
+                };
+                proxemalTiles = intTiles.ToList();
+                // Is the current cell alive?
+                if (clientArray[i] == 1)
+                {
+                    if (proxemalTiles.Where(a => a == 1).Count() < 2 || proxemalTiles.Where(a => a == 1).Count() > 3) // dies
+                    {
+                        newGameArray[i] = 0;
+
+                    }
+                    else
+                    {
+                        newGameArray[i] = 1;
+                    }
+                }
+                // If it's dead, does it have enough living neighbors to become alive?
+                else if(clientArray[i] == 0)
+                {
+                    if(proxemalTiles.Where(a => a == 1).Count() == 3)
+                    {
+                        newGameArray[i] = 1;
+                    }
+                }
+            }
+            //if (newGameArray[liveDiePosition] == 0) newGameArray[liveDiePosition] = 1;
+            //else newGameArray[liveDiePosition] = 0;
+            return newGameArray;
         }
     }
 }

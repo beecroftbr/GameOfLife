@@ -9,23 +9,38 @@ var connection = new signalR.HubConnectionBuilder().withUrl("/drawHub").build();
 var numberOfTiles = 16;
 var totalTileDepth=numberOfTiles+2;
 var tiles = [];
+tiles[136] = 1;
+tiles[153] = 1;
+tiles[171] = 1;
+tiles[172] = 1;
 var canvasElement = document.getElementById("lifeCanvas");
 var tileHeight = canvasElement.height / numberOfTiles;
 var tileWidth = canvasElement.width / numberOfTiles;
 var ctx = canvasElement.getContext('2d');
+for (let i = totalTileDepth; i < totalTileDepth * totalTileDepth; i++) {
+    var row = Math.floor(i / totalTileDepth);
+    var column = i % totalTileDepth;
+    if (row == 0 || row > numberOfTiles || column == 0 || column > numberOfTiles)
+        continue;
+
+    if (tiles[i] == 1)
+        ctx.fillRect((column - 1) * tileWidth, (row - 1) * tileHeight, tileHeight, tileWidth);
+}
 
 connection.on("ReceiveDraw", function (livePixels) {
-    drawGrid(ctx);
     //var chatData = document.getElementById("hiddenData");
     //chatData.innerHTML = livePixels;
     
     //redraw the board upon connection of user selection
-    for(let i = 0; i < totalTileDepth^2; i++) {
-        var row = totalTileDepth^2 / numberOfTiles;
-        var column = totalTileDepth^2 % numberOfTiles;
-        if (row == 0 || row > numberOfTiles || col == 0 || col > numberOfTiles) continue;
-        
-        ctx.fillRect(row, column, tileHeight, tileWidth);
+    ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+    for (let i = totalTileDepth; i < totalTileDepth * totalTileDepth; i++) {
+        var row = Math.floor(i / totalTileDepth);
+        var column = i % totalTileDepth;
+        if (row == 0 || row > numberOfTiles || column == 0 || column > numberOfTiles)
+            continue;
+
+        if (livePixels[i] == 1)
+            ctx.fillRect((column - 1) * tileWidth, (row - 1) * tileHeight, tileHeight, tileWidth);
     }
     
 });
@@ -59,11 +74,14 @@ document.getElementById("lifeCanvas").addEventListener("click", function (event)
     var trueYPixel = Math.ceil(canvasY / tileHeight);
     //userData = userData.replaceAt(trueXPixel + ((trueYPixel) * (numberOfTiles + 2)), "1");
     //document.getElementById("hiddenData").innerHTML = userData;
-    tiles[(trueXPixel + ((trueYPixel) * (numberOfTiles + 2)))] = "1";
-    ctx.fillStyle='red';
-    ctx.fillRect(0,0,canvasElement.width,canvasElement.height);
+    if (tiles[(trueXPixel + ((trueYPixel) * (numberOfTiles + 2)))] == "1")
+        tiles[(trueXPixel + ((trueYPixel) * (numberOfTiles + 2)))] = "0";
+    else
+        tiles[(trueXPixel + ((trueYPixel) * (numberOfTiles + 2)))] = "1";
+    //ctx.fillStyle='red';
+    //ctx.fillRect(0,0,canvasElement.width,canvasElement.height);
     
-    connection.invoke("SendDraw", JSON.stringify(tiles)).catch(function (err) {
+    connection.invoke("SendDraw", JSON.stringify(tiles), totalTileDepth, 0).catch(function (err) {
         return console.error(err.toString());
     });
     event.preventDefault();
