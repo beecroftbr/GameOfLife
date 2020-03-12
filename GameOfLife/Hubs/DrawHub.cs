@@ -40,11 +40,11 @@ namespace GameOfLife.Hubs
             for (int i = totalTileDepth + 1; i < newGameArray.Length - totalTileDepth - 1; i++)
             {
                 // fail fast:  we already know that if i % totalTileDepth = 0 
-                // OR if i + 1 / totalTileDepth = 0
+                // OR if i + 1 % totalTileDepth = 0
                 // OR if i < totalTileDepth
                 // OR if i > clientArray.Length - totalTileDepth
                 // then it is an out of bounds square.
-                if ((i + 1) / totalTileDepth == 0
+                if ((i + 1) % totalTileDepth == 0
                     || i < totalTileDepth
                     || i % totalTileDepth == 0
                     || i > clientArray.Length - totalTileDepth
