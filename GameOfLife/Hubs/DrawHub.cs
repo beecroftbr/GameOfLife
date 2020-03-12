@@ -13,7 +13,7 @@ namespace GameOfLife.Hubs
 {
     public class DrawHub : Hub
     {
-        
+        static int[] lastArray;
         
         public async Task SendDraw(string livePixels, int totalTileDepth, int updateGameState)
         {
@@ -25,6 +25,7 @@ namespace GameOfLife.Hubs
 
             int[] returnableArray = updateGameState == 0 ? arrayOfThings : applyGameRule(arrayOfThings, totalTileDepth);
 
+            lastArray = returnableArray;
             await Clients.All.SendAsync("ReceiveDraw", returnableArray);
         }
 
@@ -93,6 +94,20 @@ namespace GameOfLife.Hubs
             //if (newGameArray[liveDiePosition] == 0) newGameArray[liveDiePosition] = 1;
             //else newGameArray[liveDiePosition] = 0;
             return newGameArray;
+        }
+
+        public async void ClearSavedCanvas()
+        {
+            if(lastArray == null)
+            {
+                await Clients.All.SendAsync("ClearCanvas");
+                return;
+            }
+            for(int i = 0; i < lastArray.Length; i++)
+            {
+                lastArray[i] = 0;
+                await Clients.All.SendAsync("ClearCanvas");
+            }
         }
     }
 }

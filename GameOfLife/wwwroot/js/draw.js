@@ -45,6 +45,11 @@ connection.on("ReceiveDraw", function (livePixels) {
     
 });
 
+connection.on("ClearCanvas", function (livePixels) {
+    ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+    tiles.fill(0);
+});
+
 connection.start().then(function () {
     document.getElementById("lifeCanvas").disabled = false;
     // TODO:  retrieve latest canvas data from server.
@@ -91,9 +96,13 @@ document.getElementById("lifeCanvas").addEventListener("click", function (event)
 
 
 document.getElementById("nextButton").addEventListener("click", function (event) {
-    var user = document.getElementById("userInput").value;
-    var message = document.getElementById("messageInput").value;
     connection.invoke("SendDraw", JSON.stringify(tiles), totalTileDepth, 1).catch(function (err) {
+        return console.error(err.toString());
+    });
+    event.preventDefault();
+});
+document.getElementById("clearButton").addEventListener("click", function (event) {
+    connection.invoke("ClearSavedCanvas").catch(function (err) {
         return console.error(err.toString());
     });
     event.preventDefault();
