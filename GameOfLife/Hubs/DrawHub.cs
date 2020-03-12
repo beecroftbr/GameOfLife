@@ -38,6 +38,21 @@ namespace GameOfLife.Hubs
             int[] newGameArray = new int[clientArray.Length];
             for (int i = totalTileDepth + 1; i < newGameArray.Length - totalTileDepth - 1; i++)
             {
+                // fail fast:  we already know that if i % totalTileDepth = 0 
+                // OR if i + 1 / totalTileDepth = 0
+                // OR if i < totalTileDepth
+                // OR if i > clientArray.Length - totalTileDepth
+                // then it is an out of bounds square.
+                if ((i + 1) / totalTileDepth == 0
+                    || i < totalTileDepth
+                    || i % totalTileDepth == 0
+                    || i > clientArray.Length - totalTileDepth
+                    )
+                {
+                    newGameArray[i] = 0;
+                    continue;
+                }
+
                 var row = Math.Floor((double)i / totalTileDepth);
                 var column = i % totalTileDepth;
                 List<int> proxemalTiles;
@@ -45,8 +60,8 @@ namespace GameOfLife.Hubs
                     clientArray[i - totalTileDepth - 1], // top left tile
                     clientArray[i - totalTileDepth], // top tile
                     clientArray[i - totalTileDepth + 1], // top right tile
-                    clientArray[i - i], // left tile
-                    clientArray[i], // Tile itself
+                    clientArray[i - 1], // left tile
+                    //clientArray[i], // Tile itself
                     clientArray[i + 1], // right tile
                     clientArray[i + totalTileDepth - 1], // bottom left tile
                     clientArray[i + totalTileDepth], // bottom tile

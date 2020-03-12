@@ -30,7 +30,7 @@ for (let i = totalTileDepth; i < totalTileDepth * totalTileDepth; i++) {
 connection.on("ReceiveDraw", function (livePixels) {
     //var chatData = document.getElementById("hiddenData");
     //chatData.innerHTML = livePixels;
-    
+    tiles = livePixels;
     //redraw the board upon connection of user selection
     ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
     for (let i = totalTileDepth; i < totalTileDepth * totalTileDepth; i++) {
@@ -47,6 +47,8 @@ connection.on("ReceiveDraw", function (livePixels) {
 
 connection.start().then(function () {
     document.getElementById("lifeCanvas").disabled = false;
+    // TODO:  retrieve latest canvas data from server.
+
 }).catch(function (err) {
     return console.error(err.toString());
 });
@@ -87,6 +89,15 @@ document.getElementById("lifeCanvas").addEventListener("click", function (event)
     event.preventDefault();
 });
 
+
+document.getElementById("nextButton").addEventListener("click", function (event) {
+    var user = document.getElementById("userInput").value;
+    var message = document.getElementById("messageInput").value;
+    connection.invoke("SendDraw", JSON.stringify(tiles), totalTileDepth, 1).catch(function (err) {
+        return console.error(err.toString());
+    });
+    event.preventDefault();
+});
 
 
 //to do
