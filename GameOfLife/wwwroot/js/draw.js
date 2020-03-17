@@ -107,6 +107,25 @@ document.getElementById("clearButton").addEventListener("click", function (event
     });
     event.preventDefault();
 });
+document.getElementById("startButton").addEventListener("click", function (event) {
+    connection.invoke("StartTimer", JSON.stringify(tiles), totalTileDepth).catch(function (err) {
+        return console.error(err.toString());
+    });
+    event.preventDefault();
+});
+document.getElementById("stopButton").addEventListener("click", function (event) {
+    connection.invoke("StopTimer").catch(function (err) {
+        return console.error(err.toString());
+    });
+    event.preventDefault();
+});
+document.getElementById("setTime").addEventListener("click", function (event) {
+    var timeInSeconds = document.getElementById("numSeconds").value;
+    connection.invoke("SetTimer", timeInSeconds).catch(function (err) {
+        return console.error(err.toString());
+    });
+    event.preventDefault();
+});
 
 
 //to do

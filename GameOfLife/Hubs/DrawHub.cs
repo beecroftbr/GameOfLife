@@ -8,25 +8,49 @@ using Newtonsoft.Json.Linq;
 using System.Linq;
 using System.Collections.Generic;
 using System;
+using System.Threading;
+using Microsoft.Extensions.Hosting;
 
 namespace GameOfLife.Hubs
 {
     public class DrawHub : Hub
     {
-        static int[] lastArray;
-        
+        public static int[] lastArray;
+        public static int _lastTotalTileDepth = 18;
+        public static int _timerDelayInMilliseconds = 1000;
+        private static bool _serverIsTicking = false;
+        private static Guid _tickGuid;
+        public static IHubCallerClients _lastClients;
+
+        public DrawHub()
+        {
+            // Default 1s intervals
+            //_serverTick = new Timer(Server_Tick, this, -1, _timerDelayInMilliseconds);
+        }
+
+
         public async Task SendDraw(string livePixels, int totalTileDepth, int updateGameState)
         {
+            if (Clients != null) _lastClients = Clients;
+            _lastTotalTileDepth = totalTileDepth;
             var json = JsonConvert.DeserializeObject(livePixels);
             List<int> listArrayOfInts = ((JArray)json).Select(a => (int?) a ?? 0).ToList();
             for(int i = 0; i < totalTileDepth * totalTileDepth; i++)
                 if (i >= listArrayOfInts.Count()) listArrayOfInts.Add(0);
             int[] arrayOfThings = listArrayOfInts.ToArray();
+            await FinalizeDraw(arrayOfThings, totalTileDepth, updateGameState);
 
+        }
+
+        public async Task FinalizeDraw(int[] arrayOfThings, int totalTileDepth, int updateGameState)
+        {
+            // Fail fast on data error
+            if (arrayOfThings == null) return;
             int[] returnableArray = updateGameState == 0 ? arrayOfThings : applyGameRule(arrayOfThings, totalTileDepth);
 
             lastArray = returnableArray;
-            await Clients.All.SendAsync("ReceiveDraw", returnableArray);
+            
+            await (Clients ?? _lastClients).All.SendAsync("ReceiveDraw", returnableArray);
         }
 
         private int[] applyGameRule(int[] clientArray, int totalTileDepth)
@@ -96,18 +120,64 @@ namespace GameOfLife.Hubs
             return newGameArray;
         }
 
-        public async void ClearSavedCanvas()
+        public async Task ClearSavedCanvas()
         {
             if(lastArray == null)
             {
                 await Clients.All.SendAsync("ClearCanvas");
                 return;
             }
-            for(int i = 0; i < lastArray.Length; i++)
+            // clear last array
+            lastArray.Select(a => 0);
+            await Clients.All.SendAsync("ClearCanvas");
+        }
+
+        public void SetTimer(string timerValue)
+        {
+            int timerInterval = 0;
+            try
             {
-                lastArray[i] = 0;
-                await Clients.All.SendAsync("ClearCanvas");
+                int.TryParse(timerValue, out timerInterval);
+                if (timerInterval <= 0 || timerInterval >= 10) throw new Exception();
+                _timerDelayInMilliseconds = timerInterval * 1000;
             }
+            catch (Exception ex)
+            {
+                return;
+            }
+            //_serverTick.Change(-1, _timerDelayInMilliseconds);
+            TimerWorkerThread._timerDelayInMilliseconds = _timerDelayInMilliseconds;
+        }
+
+        public void StartTimer(string livePixels, int totalTileDepth)
+        {
+            if (lastArray == null)
+            {
+                var json = JsonConvert.DeserializeObject(livePixels);
+                List<int> listArrayOfInts = ((JArray)json).Select(a => (int?)a ?? 0).ToList();
+                for (int i = 0; i < totalTileDepth * totalTileDepth; i++)
+                    if (i >= listArrayOfInts.Count()) listArrayOfInts.Add(0);
+                lastArray = listArrayOfInts.ToArray();
+            }
+            _lastTotalTileDepth = totalTileDepth;
+            TimerWorkerThread._timerDelayInMilliseconds = _timerDelayInMilliseconds;
+            if (TimerWorkerThread.cts.IsCancellationRequested)
+            {
+                TimerWorkerThread.cts = new CancellationTokenSource();
+            }
+            else
+            {
+                Task.Run(() =>Program.twt.StopAsync(TimerWorkerThread.cts.Token));
+                TimerWorkerThread.cts = new CancellationTokenSource();
+            }
+            Task.Run(() => Program.twt.StartAsync(TimerWorkerThread.cts.Token));
+
+        }
+
+        public async void StopTimer()
+        {
+            //_serverTick.Change(-1, _timerDelayInMilliseconds);
+            TimerWorkerThread.cts.Cancel();
         }
     }
 }

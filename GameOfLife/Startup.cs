@@ -27,7 +27,6 @@ namespace GameOfLife
             services.AddRazorPages();
             services.AddSignalR();
         }
-
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -55,6 +54,8 @@ namespace GameOfLife
                 endpoints.MapHub<ChatHub>("/chatHub");
                 endpoints.MapHub<DrawHub>("/drawHub");
             });
+
+            Program.twt = new TimerWorkerThread();
         }
     }
 }
