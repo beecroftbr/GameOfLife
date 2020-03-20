@@ -33,7 +33,7 @@ namespace GameOfLife
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                await new Hubs.DrawHub().FinalizeDraw(Hubs.DrawHub.lastArray, Hubs.DrawHub._lastTotalTileDepth, 1);
+                await new Hubs.DrawHub().FinalizeDraw(Hubs.DrawHub.lastArray, Hubs.DrawHub.lastColorArray, Hubs.DrawHub._lastTotalTileDepth, 1);
                 await Task.Delay(_timerDelayInMilliseconds, stoppingToken);
             }
         }

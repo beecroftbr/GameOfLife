@@ -9,10 +9,16 @@ var connection = new signalR.HubConnectionBuilder().withUrl("/drawHub").build();
 var numberOfTiles = 16;
 var totalTileDepth=numberOfTiles+2;
 var tiles = [];
+var colors = [];
+var color = document.getElementById("colorChoice");
 tiles[136] = 1;
 tiles[153] = 1;
 tiles[171] = 1;
 tiles[172] = 1;
+colors[136] = "#000000";
+colors[153] = "#000000";
+colors[171] = "#000000";
+colors[172] = "#000000";
 var canvasElement = document.getElementById("lifeCanvas");
 var tileHeight = canvasElement.height / numberOfTiles;
 var tileWidth = canvasElement.width / numberOfTiles;
@@ -27,10 +33,26 @@ for (let i = totalTileDepth; i < totalTileDepth * totalTileDepth; i++) {
         ctx.fillRect((column - 1) * tileWidth, (row - 1) * tileHeight, tileHeight, tileWidth);
 }
 
-connection.on("ReceiveDraw", function (livePixels) {
+function drawGrid() {
+    ctx.lineWidth = 2;
+    for (var i = 0; i < canvasElement.height; i += tileWidth) {
+        ctx.moveTo(0, i);
+        ctx.lineTo(canvasElement.width, i);
+        ctx.stroke();
+    }
+    for (var i = 0; i < canvasElement.width; i += tileHeight) {
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i, canvasElement.height);
+        ctx.stroke();
+    }
+}
+
+
+connection.on("ReceiveDraw", function (livePixels, colorPixels) {
     //var chatData = document.getElementById("hiddenData");
     //chatData.innerHTML = livePixels;
     tiles = livePixels;
+    colors= colorPixels;
     //redraw the board upon connection of user selection
     ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
     for (let i = totalTileDepth; i < totalTileDepth * totalTileDepth; i++) {
@@ -39,9 +61,17 @@ connection.on("ReceiveDraw", function (livePixels) {
         if (row == 0 || row > numberOfTiles || column == 0 || column > numberOfTiles)
             continue;
 
-        if (livePixels[i] == 1)
+        if (livePixels[i] == 1) {
+            if(colorPixels[i] == "") {
+                ctx.fillStyle = "#FFFFFF";
+            }
+            else {
+                ctx.fillStyle = colorPixels[i];
+            }
             ctx.fillRect((column - 1) * tileWidth, (row - 1) * tileHeight, tileHeight, tileWidth);
+        }
     }
+    drawGrid();
     
 });
 
@@ -51,6 +81,7 @@ connection.on("ClearCanvas", function (livePixels) {
 });
 
 connection.start().then(function () {
+    drawGrid();
     document.getElementById("lifeCanvas").disabled = false;
     // TODO:  retrieve latest canvas data from server.
 
@@ -81,14 +112,18 @@ document.getElementById("lifeCanvas").addEventListener("click", function (event)
     var trueYPixel = Math.ceil(canvasY / tileHeight);
     //userData = userData.replaceAt(trueXPixel + ((trueYPixel) * (numberOfTiles + 2)), "1");
     //document.getElementById("hiddenData").innerHTML = userData;
-    if (tiles[(trueXPixel + ((trueYPixel) * (numberOfTiles + 2)))] == "1")
+    if (tiles[(trueXPixel + ((trueYPixel) * (numberOfTiles + 2)))] == "1") {
         tiles[(trueXPixel + ((trueYPixel) * (numberOfTiles + 2)))] = "0";
-    else
+        colors[(trueXPixel + ((trueYPixel) * (numberOfTiles + 2)))] = "";
+    }
+    else {
         tiles[(trueXPixel + ((trueYPixel) * (numberOfTiles + 2)))] = "1";
+        colors[(trueXPixel + ((trueYPixel) * (numberOfTiles + 2)))] = color.value;
+    }
+        
     //ctx.fillStyle='red';
     //ctx.fillRect(0,0,canvasElement.width,canvasElement.height);
-    
-    connection.invoke("SendDraw", JSON.stringify(tiles), totalTileDepth, 0).catch(function (err) {
+    connection.invoke("SendDraw", JSON.stringify(tiles), JSON.stringify(colors), totalTileDepth, 0, color.value).catch(function (err) {
         return console.error(err.toString());
     });
     event.preventDefault();
@@ -96,7 +131,7 @@ document.getElementById("lifeCanvas").addEventListener("click", function (event)
 
 
 document.getElementById("nextButton").addEventListener("click", function (event) {
-    connection.invoke("SendDraw", JSON.stringify(tiles), totalTileDepth, 1).catch(function (err) {
+    connection.invoke("SendDraw", JSON.stringify(tiles), JSON.stringify(colors), totalTileDepth, 1, color.value).catch(function (err) {
         return console.error(err.toString());
     });
     event.preventDefault();
@@ -108,7 +143,7 @@ document.getElementById("clearButton").addEventListener("click", function (event
     event.preventDefault();
 });
 document.getElementById("startButton").addEventListener("click", function (event) {
-    connection.invoke("StartTimer", JSON.stringify(tiles), totalTileDepth).catch(function (err) {
+    connection.invoke("StartTimer", JSON.stringify(tiles), JSON.stringify(colors), totalTileDepth).catch(function (err) {
         return console.error(err.toString());
     });
     event.preventDefault();
@@ -126,6 +161,7 @@ document.getElementById("setTime").addEventListener("click", function (event) {
     });
     event.preventDefault();
 });
+
 
 
 //to do
