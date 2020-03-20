@@ -1,31 +1,4 @@
 ﻿@page
-<div class="container">
-    <div class="row">&nbsp;</div>
-    <div class="row">
-        <div class="col-2">User</div>
-        <div class="col-4"><input type="text" id="userInput" /></div>
-    </div>
-    <div class="row">
-        <div class="col-2">Message</div>
-        <div class="col-4"><input type="text" id="messageInput" /></div>
-    </div>
-    <div class="row">&nbsp;</div>
-    <div class="row">
-        <div class="col-6">
-            <input type="button" id="sendButton" value="Send Message" />
-        </div>
-    </div>
-</div>
-<div class="row">
-    <div class="col-12">
-        <hr />
-    </div>
-</div>
-<div class="row">
-    <div class="col-6">
-        <ul id="messagesList"></ul>
-    </div>
-</div>
 
 <canvas id="lifeCanvas" width="500" height="500" style="border:solid 2px">Your browser does not support HTML5 canvas.</canvas>
 <br />
@@ -36,27 +9,7 @@ Delay in Seconds: <input type="number" min="1" max="10" id="numSeconds" value="1
 <input type="button" id="nextButton" value="Next step" />
 <input type="button" id="clearButton" value="Clear canvas" />
 <br/>
-<input type = "color" id="colorChoice"/>
-<p id="hiddenData" style="visibility:hidden">222222222222222222203100000000110000000011000011000000000000111100000000000011000011000000001100000000110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000302222222222222222222</p>
-000000000000000000
-001100000000110000
-000011000011000000
-000000111100000000
-000011000011000000
-001100000000110000
-000000000000000000
-000000000000000000
-000000000000000000
-000000000000000000
-000000000000000000
-000000000000000000
-000000000000000000
-000000000000000000
-000000000000000000
-000000000000000000
-000000000000000000
-000000000000000000
+Select your color: <input type = "color" id="colorChoice"/>
 <script src="~/js/signalr/dist/browser/signalr.js"></script>
 <script src="~/js/chat.js"></script>
 <script src="~/js/draw.js"></script>
-<script src="~/js/jscolor"></script>

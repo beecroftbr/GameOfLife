@@ -1,7 +1,7 @@
 ﻿"use strict";
 
-//var connection = new signalR.HubConnectionBuilder().withUrl("http://students.cs.weber.edu/ThreeMenWithBeards/drawHub").build(); // Server setting
-var connection = new signalR.HubConnectionBuilder().withUrl("/drawHub").build(); // Localhost setting
+var connection = new signalR.HubConnectionBuilder().withUrl("http://students.cs.weber.edu/ThreeMenWithBeards/drawHub").build(); // Server setting
+//var connection = new signalR.HubConnectionBuilder().withUrl("/drawHub").build(); // Localhost setting
 
 // Disable the canvas until the page is loaded.
 //document.getElementById("lifeCanvas").disabled = true;
@@ -78,6 +78,7 @@ connection.on("ReceiveDraw", function (livePixels, colorPixels) {
 connection.on("ClearCanvas", function (livePixels) {
     ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
     tiles.fill(0);
+    drawGrid();
 });
 
 connection.start().then(function () {
